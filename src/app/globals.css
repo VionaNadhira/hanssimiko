@@ -1,0 +1,554 @@
+@import 'tailwindcss';
+
+/* ==========================================================================
+   Hanssimiko Bunker — Design Tokens, Theme & Responsive Foundation
+   ========================================================================== */
+
+:root {
+  /* --- 0G Official Palette -------------------------------------------- */
+  --color-bg: #000000;
+  --color-fg: #fefefe;
+  --color-gray-1: #e5e5e5;
+  --color-surface: rgba(254, 254, 254, 0.04);
+  --color-surface-hover: rgba(254, 254, 254, 0.07);
+  --color-border: rgba(254, 254, 254, 0.12);
+  --color-border-strong: rgba(254, 254, 254, 0.24);
+  --color-text-secondary: rgba(254, 254, 254, 0.72);
+  --color-text-muted: rgba(254, 254, 254, 0.56);
+
+  /* Purple Accent Scale (0G Primary) */
+  --color-primary: #9200e1;
+  --color-primary-1: #b75fff;
+  --color-primary-2: #cb8aff;
+  --color-primary-3: #d5a3ff;
+  --color-primary-4: #e3c1ff;
+
+  /* Semantic status — deliberately outside the purple ramp */
+  --success: #2ecc71;
+  --warning: #e6b85c;
+  --error: #e05252;
+  --success-subtle: rgba(46, 204, 113, 0.12);
+  --success-border: rgba(46, 204, 113, 0.32);
+  --warning-subtle: rgba(230, 184, 92, 0.1);
+  --warning-border: rgba(230, 184, 92, 0.3);
+  --error-subtle: rgba(224, 82, 82, 0.1);
+  --error-border: rgba(224, 82, 82, 0.32);
+
+  /* --- Layout primitives ------------------------------------------------ */
+  --radius-control: 0.375rem;
+  --radius-card: 0.6rem;
+  --radius-modal: 0.75rem;
+
+  /* Single vertical rhythm token: every block gap on every page uses this. */
+  --space-section: 1.5rem; /* 24px */
+  /*
+   * Horizontal gutter. Phones get 16px so the header toggle sits 16px from the
+   * screen edge; from md up it widens to 24px to match --space-section. The
+   * override lives in a media query at the bottom of this file.
+   */
+  --space-gutter: 1rem; /* 16px */
+  --container-page: 1100px;
+
+  --sidebar-width-expanded: 16.25rem; /* 260px */
+  --sidebar-width-rail: 4rem; /* 64px */
+  /*
+   * The sidebar header and the top bar are two halves of one horizontal rule,
+   * so both must resolve to the same value. Anything that needs to sit inside
+   * that row (the toggle, the monogram) is sized from the same token.
+   */
+  --header-height: 4.5rem; /* 72px */
+  --header-toggle-size: 1.75rem; /* 28px */
+  --bottom-nav-height: 4rem; /* 64px */
+
+  /* Safe-area helpers (zero on devices without a notch) */
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+
+  /* Full-viewport height with a vh fallback for older engines. */
+  --viewport-height: 100vh;
+  --viewport-height: 100dvh;
+
+  /* --- Typography ------------------------------------------------------- */
+  --font-sans:
+    var(--font-inter), 'Regola Pro', Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  /* Wordmark faces. next/font injects --font-grenze-gotisch / --font-cinzel on
+     <html>; these wrap them with fallbacks under distinct names so the two
+     layers cannot overwrite each other. The serif tail keeps the mark legible if
+     the font request is slow, blocked, or fails outright. */
+  --font-display-gotisch: var(--font-grenze-gotisch), 'Grenze Gotisch', 'Metal Mania', 'New Rocker', serif;
+  --font-display-cinzel: var(--font-cinzel), Cinzel, 'Times New Roman', serif;
+
+  /* Backing plate for the HB monogram. */
+  --monogram-bg: #0a0a0a;
+}
+
+@theme {
+  /* Breakpoints are declared once here so no component hardcodes a width. */
+  --breakpoint-sm: 30rem; /* 480px */
+  --breakpoint-md: 48rem; /* 768px */
+  --breakpoint-lg: 64rem; /* 1024px */
+  --breakpoint-xl: 80rem; /* 1280px */
+
+  --color-background: var(--color-bg);
+  --color-surface: var(--color-surface);
+  --color-surface-elevated: var(--color-surface-hover);
+  --color-surface-hover: var(--color-surface-hover);
+  --color-border: var(--color-border);
+  --color-border-strong: var(--color-border-strong);
+  --color-foreground: var(--color-fg);
+  --color-muted: var(--color-text-secondary);
+  --color-subtle: var(--color-text-muted);
+  --color-primary: var(--color-primary);
+  --color-primary-1: var(--color-primary-1);
+  --color-primary-3: var(--color-primary-3);
+  --color-on-primary: var(--color-fg);
+  --color-success: var(--success);
+  --color-warning: var(--color-warning);
+  --color-error: var(--error);
+
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-mono);
+
+  --radius-control: var(--radius-control);
+  --radius-card: var(--radius-card);
+  --radius-modal: var(--radius-modal);
+
+  --spacing-section: var(--space-section);
+  --spacing-gutter: var(--space-gutter);
+
+  --text-headline-xl: 1.625rem;
+  --text-headline-lg: 1.375rem;
+  --text-headline-md: 1.125rem;
+  --text-body-lg: 0.9375rem;
+  --text-body-md: 0.875rem;
+  --text-body-sm: 0.8125rem;
+  --text-mono-lg: 1.25rem;
+  --text-mono-md: 0.875rem;
+  --text-mono-sm: 0.875rem;
+  --text-mono-xs: 0.75rem;
+  --text-label: 0.75rem;
+  --text-eyebrow: 0.75rem;
+  --text-numeric: clamp(1.125rem, 0.9rem + 1.1vw, 1.5rem);
+}
+
+@layer base {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+    border-color: var(--color-border);
+  }
+
+  html {
+    font-size: 16px;
+    -webkit-text-size-adjust: 100%;
+    color-scheme: dark;
+    /* Guard against a stray wide child creating a page-level sideways scroll. */
+    overflow-x: hidden;
+  }
+
+  body {
+    background-color: var(--color-bg);
+    color: var(--color-fg);
+    font-family: var(--font-sans);
+    font-size: 0.875rem;
+    line-height: 1.5;
+    font-weight: 400;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    font-variant-numeric: tabular-nums;
+    overflow-x: hidden;
+    max-width: 100%;
+    padding-left: var(--safe-left);
+    padding-right: var(--safe-right);
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-weight: 600;
+    letter-spacing: -0.02em;
+  }
+
+  /* Flex/grid children holding text must be allowed to shrink below content size. */
+  img,
+  svg,
+  video,
+  canvas {
+    max-width: 100%;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-primary-1);
+    outline-offset: 2px;
+  }
+
+  ::selection {
+    background-color: var(--color-primary);
+    color: var(--color-fg);
+  }
+
+  ::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+  }
+  ::-webkit-scrollbar-track {
+    background: var(--color-bg);
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--color-border-strong);
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--color-text-muted);
+  }
+}
+
+@layer components {
+  .t-headline-xl {
+    font-size: 1.625rem;
+    line-height: 2rem;
+    font-weight: 600;
+    letter-spacing: -0.025em;
+  }
+  .t-headline-lg {
+    font-size: 1.375rem;
+    line-height: 1.75rem;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+  }
+  .t-headline-md {
+    font-size: 1.125rem;
+    line-height: 1.5rem;
+    font-weight: 600;
+    letter-spacing: -0.015em;
+  }
+  .t-body-lg {
+    font-size: 0.9375rem;
+    line-height: 1.375rem;
+    font-weight: 400;
+  }
+  .t-body-md {
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    font-weight: 400;
+  }
+  .t-body-sm {
+    font-size: 0.8125rem;
+    line-height: 1.125rem;
+    font-weight: 400;
+  }
+  .t-mono-lg {
+    font-family: var(--font-mono);
+    font-size: 1.25rem;
+    line-height: 1.625rem;
+    font-weight: 500;
+    letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
+  }
+  .t-mono-md {
+    font-family: var(--font-mono);
+    font-size: 0.875rem;
+    line-height: 1.125rem;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    font-variant-numeric: tabular-nums;
+  }
+  .t-mono-sm {
+    font-family: var(--font-mono);
+    font-size: 0.875rem;
+    line-height: 1.125rem;
+    font-weight: 400;
+    font-variant-numeric: tabular-nums;
+  }
+  .t-mono-xs {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    line-height: 0.9375rem;
+    font-weight: 400;
+    letter-spacing: 0.02em;
+    font-variant-numeric: tabular-nums;
+  }
+  .t-label {
+    font-family: var(--font-sans);
+    font-size: 0.75rem;
+    line-height: 1rem;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .t-mono {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+  }
+  .t-eyebrow {
+    font-family: var(--font-sans);
+    font-size: 0.75rem;
+    line-height: 1rem;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--color-text-secondary);
+  }
+  /* Large financial figures scale with the viewport instead of overflowing. */
+  .t-numeric {
+    font-family: var(--font-mono);
+    font-size: clamp(1.125rem, 0.85rem + 1.4vw, 1.5rem);
+    line-height: 1.25;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
+    overflow-wrap: anywhere;
+  }
+
+  /* Page shell: header and main share one centred container so the breadcrumb
+     lines up with the first card and the account chip with the last. */
+  .page-container {
+    width: 100%;
+    max-width: var(--container-page);
+    margin-inline: auto;
+    padding-inline: var(--space-gutter);
+  }
+
+  /* Vertical rhythm between page blocks. */
+  .stack {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-section);
+  }
+
+  /* Long machine strings must never widen their parent. */
+  .break-anywhere {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+
+  .hash-inline {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    overflow-wrap: anywhere;
+    word-break: break-all;
+  }
+
+  /* Full-height shell that respects mobile browser chrome. */
+  .app-shell {
+    min-height: var(--viewport-height);
+  }
+
+  /*
+   * Horizontal offset for the content column, mirroring the sidebar exactly:
+   *   phone   sidebar is an overlay   -> no offset
+   *   tablet  sidebar is a 64px rail  -> rail offset
+   *   desktop sidebar is 240px       -> panel offset, or rail when collapsed
+   *
+   * Only the collapsed flag comes from JS, and it is a data attribute, so the
+   * first server-rendered paint already reserves the right space.
+   */
+  .app-main {
+    padding-left: 0;
+  }
+  @media (min-width: 48rem) {
+    .app-main {
+      padding-left: var(--sidebar-width-rail);
+    }
+  }
+  @media (min-width: 64rem) {
+    .app-main {
+      padding-left: var(--sidebar-width-expanded);
+    }
+    [data-collapsed='true'] .app-main {
+      padding-left: var(--sidebar-width-rail);
+    }
+  }
+
+  .safe-top {
+    padding-top: var(--safe-top);
+  }
+  .safe-bottom {
+    padding-bottom: var(--safe-bottom);
+  }
+}
+
+@layer utilities {
+  /* Touch targets: only applied on coarse pointers so desktop stays compact. */
+  @media (pointer: coarse) {
+    .tap-target {
+      min-width: 2.75rem;
+      min-height: 2.75rem;
+    }
+  }
+
+  /*
+   * The sidebar toggle keeps a 2px focus ring inside its own 36px box. A plain
+   * `tap-target` override would inflate it to 44px and push it out of the 64px
+   * rail, so the ring is drawn with an inset outline instead of a border.
+   */
+  .header-toggle:focus-visible {
+    outline: 2px solid var(--color-primary-1);
+    outline-offset: -2px;
+  }
+
+  /* Widen the content gutter once the layout is no longer a single column. */
+  @media (min-width: 48rem) {
+    :root {
+      --space-gutter: 1.5rem; /* 24px */
+    }
+  }
+
+  /* iOS zooms the page when a focused input is under 16px. */
+  @media (max-width: 47.99rem) {
+    input,
+    select,
+    textarea {
+      font-size: max(1rem, 1rem) !important;
+    }
+  }
+
+  .rule-t {
+    border-top: 1px solid var(--color-border);
+  }
+  .rule-b {
+    border-bottom: 1px solid var(--color-border);
+  }
+  .rule-l {
+    border-left: 1px solid var(--color-border);
+  }
+  .rule-r {
+    border-right: 1px solid var(--color-border);
+  }
+
+  /* Hidden from sight but available to assistive tech. */
+  .sr-only-focusable:not(:focus):not(:focus-within) {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+  }
+}
+
+/* Skeleton shimmer */
+@keyframes skeleton-pulse {
+  0%,
+  100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 0.85;
+  }
+}
+
+.skeleton {
+  background-color: var(--color-surface);
+  border-radius: var(--radius-control);
+  animation: skeleton-pulse 1.6s ease-in-out infinite;
+}
+
+@keyframes spinner {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.spinner {
+  animation: spinner 0.7s linear infinite;
+}
+
+/* Toasts fill the width of a phone and clear the notch; on wider screens the
+   sonner defaults (top-right corner) apply. */
+@media (max-width: 47.99rem) {
+  .app-toaster {
+    top: calc(var(--safe-top) + 0.5rem) !important;
+    left: 0.5rem !important;
+    right: 0.5rem !important;
+    width: auto !important;
+    max-width: none !important;
+  }
+  .app-toaster [data-sonner-toast] {
+    width: 100% !important;
+    margin-inline: 0 !important;
+  }
+}
+
+/* Uiverse loader — adapted to 0G purple */
+.loader {
+  position: relative;
+  width: 120px;
+  height: 90px;
+  margin: 0 auto;
+}
+.loader::before {
+  content: '';
+  position: absolute;
+  bottom: 30px;
+  left: 50px;
+  height: 30px;
+  width: 30px;
+  border-radius: 50%;
+  background: var(--color-primary-1);
+  animation: loading-bounce 0.5s ease-in-out infinite alternate;
+}
+.loader::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 0;
+  height: 7px;
+  width: 45px;
+  border-radius: 4px;
+  box-shadow:
+    0 5px 0 var(--color-surface),
+    -35px 50px 0 var(--color-surface),
+    -70px 95px 0 var(--color-surface);
+  animation: loading-step 1s ease-in-out infinite;
+}
+@keyframes loading-bounce {
+  0% {
+    transform: scale(1, 0.7);
+  }
+  40% {
+    transform: scale(0.8, 1.2);
+  }
+  60% {
+    transform: scale(1, 1);
+  }
+  100% {
+    bottom: 140px;
+  }
+}
+@keyframes loading-step {
+  0% {
+    box-shadow:
+      0 10px 0 rgba(0, 0, 0, 0),
+      0 10px 0 var(--color-surface),
+      -35px 50px 0 var(--color-surface),
+      -70px 90px 0 var(--color-surface);
+  }
+  100% {
+    box-shadow:
+      0 10px 0 var(--color-surface),
+      -35px 50px 0 var(--color-surface),
+      -70px 90px 0 var(--color-surface),
+      -70px 90px 0 rgba(0, 0, 0, 0);
+  }
+}
+
+/* Respect the OS "reduce motion" setting for sidebar + modal transitions and
+   every infinite spinner/skeleton animation. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

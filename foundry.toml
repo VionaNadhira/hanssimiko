@@ -1,0 +1,37 @@
+[profile.default]
+src = "contracts"
+out = "out"
+libs = ["lib"]
+test = "test"
+script = "script"
+cache_path = "cache"
+solc_version = "0.8.26"
+evm_version = "cancun"
+optimizer = true
+optimizer_runs = 200
+via_ir = false
+bytecode_hash = "none"
+# Treat warnings as errors so no compiler warning is left unresolved.
+deny = "warnings"
+fs_permissions = [{ access = "read", path = "./out" }]
+
+# 0G Chain network. Chain ID, RPC and explorer are read from the environment
+# so that no credential or endpoint is ever committed to git.
+[rpc_endpoints]
+mainnet = "${ZERO_G_RPC_URL}"
+
+[etherscan]
+mainnet = { key = "${ZERO_G_EXPLORER_API_KEY}", url = "${ZERO_G_EXPLORER_URL}" }
+
+[fmt]
+line_length = 120
+tab_width = 4
+bracket_spacing = false
+int_types = "long"
+
+[lint]
+# `environment-read-across-mutation` fires whenever a test function both reads
+# `block.timestamp` and calls `vm.warp`. Testing a timelock requires exactly
+# that, so the rule is disabled here rather than per-line. It is not relevant
+# to `contracts/`, which is where production behaviour is enforced.
+exclude_lints = ["environment-read-across-mutation"]
