@@ -31,12 +31,27 @@ export const zeroGMainnet = defineChain({
   testnet: false,
 });
 
-const projectId = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID?.trim() || '3fcc444175d3684f08b70b4a533be1f4';
+const projectId = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID?.trim() ?? '';
+
+/**
+ * The canonical URL of this deployment.
+ *
+ * WalletConnect Verify API checks that `metadata.url` exactly matches the
+ * origin the wallet sees. An incorrect or mismatched URL triggers the
+ * "phishing" warning shown by MetaMask, Rainbow, etc.
+ *
+ * Set NEXT_PUBLIC_APP_URL to the Railway (or custom) domain BEFORE building,
+ * e.g. https://hanssimiko.up.railway.app  — no trailing slash.
+ * During local development it falls back to localhost:3000.
+ */
+const appUrl =
+  process.env.NEXT_PUBLIC_APP_URL?.trim() ||
+  (typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000');
 
 const metadata = {
   name: 'Hanssimiko Bunker',
   description: 'Non-custodial timelock vault for native 0G on 0G Chain',
-  url: typeof window !== 'undefined' ? window.location.origin : 'https://0g.ai',
+  url: appUrl,
   icons: ['https://0g.ai/assets/68c94090bf5d17500549f947_0G-500x500.png'],
 };
 
