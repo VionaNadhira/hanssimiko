@@ -40,13 +40,17 @@ const projectId = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID?.trim() ?? ''
  * origin the wallet sees. An incorrect or mismatched URL triggers the
  * "phishing" warning shown by MetaMask, Rainbow, etc.
  *
- * Set NEXT_PUBLIC_APP_URL to the Railway (or custom) domain BEFORE building,
- * e.g. https://hanssimiko.up.railway.app  — no trailing slash.
+ * Set NEXT_PUBLIC_APP_URL to the production domain BEFORE building,
+ * e.g. https://hanssimikobunker.vercel.app  — no trailing slash.
  * During local development it falls back to localhost:3000.
  */
 const appUrl =
   process.env.NEXT_PUBLIC_APP_URL?.trim() ||
-  (typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000');
+  (typeof window !== 'undefined'
+    ? window.location.origin
+    : process.env.NODE_ENV === 'production'
+      ? 'https://hanssimikobunker.vercel.app'
+      : 'http://localhost:3000');
 
 const metadata = {
   name: 'Hanssimiko Bunker',
