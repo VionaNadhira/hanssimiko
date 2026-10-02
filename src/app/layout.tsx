@@ -9,6 +9,7 @@ import {Providers} from '@/components/Providers';
 import {Sidebar} from '@/components/Sidebar';
 import {TopBar} from '@/components/TopBar';
 import {WorkspaceProvider} from '@/components/WorkspaceContext';
+import {ThreeBackground} from '@/components/ThreeBackground';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -78,6 +79,7 @@ export default function RootLayout({children}: {children: React.ReactNode}) {
       className={`${inter.variable} ${GeistMono.variable} ${grenzeGotisch.variable} ${cinzel.variable} dark`}
     >
       <body className="min-h-screen bg-[var(--color-bg)] text-[var(--color-fg)] antialiased selection:bg-[var(--color-primary)] selection:text-[var(--color-fg)]">
+        <ThreeBackground />
         <Providers>
           <WorkspaceProvider>
             <TopBar />
