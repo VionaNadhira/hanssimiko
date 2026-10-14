@@ -6,15 +6,17 @@ import {useAccount} from 'wagmi';
 
 import {CopyButton} from '@/components/CopyButton';
 import {CardListSkeleton} from '@/components/Skeleton';
+import {TxButton, useTxPhaseEffects, useTxToasts} from '@/components/TxButton';
 import {VaultDetailPanel} from '@/components/VaultDetailPanel';
 import {Button, Notice, Panel, Status} from '@/components/ui';
 import {useWorkspace} from '@/components/WorkspaceContext';
 import {getAddressUrl} from '@/config/chain';
-import {CONTRACT_ADDRESS, IS_LOCKER_CONFIGURED} from '@/config/contract';
+import {CONTRACT_ADDRESS, IS_LOCKER_CONFIGURED, locker} from '@/config/contract';
 import {useCorrectNetwork, useVaultData, type Position} from '@/hooks/useVaultData';
 import {useRefreshChainData} from '@/hooks/useRefreshChainData';
 import {formatDate, formatDuration, formatZeroG, formatZeroGFull, shortenHex} from '@/lib/format';
 import {useNowSeconds} from '@/lib/useNow';
+import {useTxController} from '@/lib/useTxState';
 import {useVaultSelection} from '@/lib/useVaultSelection';
 
 type Filter = 'all' | 'locked' | 'unlocked' | 'withdrawn';
@@ -135,7 +137,7 @@ export function PositionsPanel() {
           <ul className="flex flex-col gap-4 md:hidden">
             {filtered.map((position) => (
               <li key={position.lockId.toString()}>
-                <LockCard position={position} now={now} onOpen={select} />
+                <LockCard position={position} now={now} onOpen={select} onWithdrawn={refresh} />
               </li>
             ))}
           </ul>
@@ -153,11 +155,12 @@ export function PositionsPanel() {
                     <Th>Unlock Date</Th>
                     <Th>Remaining</Th>
                     <Th>Status</Th>
+                    <Th>Actions</Th>
                   </tr>
                 </thead>
                 <tbody>
                   {filtered.map((position) => (
-                    <TableRow key={position.lockId.toString()} position={position} now={now} onOpen={select} />
+                    <TableRow key={position.lockId.toString()} position={position} now={now} onOpen={select} onWithdrawn={refresh} />
                   ))}
                 </tbody>
               </table>
@@ -202,76 +205,117 @@ export function PositionsPanel() {
 /**
  * Mobile vault card.
  *
- * The whole card is a `<button>`, not a `div` with an `onClick`, so it is
- * reachable by Tab, activates on Enter and Space, and is announced as a button
- * rather than as a generic group. The chevron is the affordance that says the
- * card opens something.
+ * The card info section is a `<button>` that opens the detail drawer.
+ * For UNLOCKED vaults, a separate withdraw button is rendered below the card,
+ * so there is no illegal button-in-button nesting.
  */
-function LockCard({position, now, onOpen}: {position: Position; now: bigint; onOpen: (id: bigint) => void}) {
+function LockCard({position, now, onOpen, onWithdrawn}: {position: Position; now: bigint; onOpen: (id: bigint) => void; onWithdrawn: () => void}) {
   const tone = position.status === 'ready' ? 'ready' : position.status === 'settled' ? 'withdrawn' : 'warning';
   const label = position.status === 'ready' ? 'UNLOCKED' : position.status === 'settled' ? 'WITHDRAWN' : 'LOCKED';
   const remaining = position.unlockTime > now ? position.unlockTime - now : 0n;
 
-  return (
-    <button
-      type="button"
-      onClick={() => onOpen(position.lockId)}
-      aria-label={`Vault ${position.lockId.toString()}, ${label}. Open details.`}
-      className={`group flex w-full cursor-pointer flex-col gap-3 rounded-[var(--radius-card)] border bg-[var(--color-surface)] p-4 text-left transition-colors hover:border-[var(--color-border-strong)] hover:bg-[var(--color-surface-hover)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-primary-1)] ${
-        // A matured vault gets a green edge so the actionable ones are findable
-        // without reading every row.
-        position.status === 'ready' ? 'border-success-border' : 'border-[var(--color-border)]'
-      } ${position.status === 'settled' ? 'opacity-70' : ''}`}
-    >
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0 flex-1">
-          <span className="t-mono-sm block text-[var(--color-fg)]">Vault #{position.lockId.toString()}</span>
-          <span
-            title={formatZeroGFull(position.amount)}
-            className="t-numeric mt-1 block break-anywhere"
-          >
-            {formatZeroG(position.amount, {maxDecimals: 4})}{' '}
-            <span className="text-[0.75rem] font-normal text-[var(--color-text-muted)]">0G</span>
-          </span>
-        </div>
-        <div className="flex shrink-0 items-center gap-1.5">
-          <Status tone={tone}>{label}</Status>
-          <ChevronRight
-            size={18}
-            className="text-[var(--color-text-muted)] transition-transform group-hover:translate-x-0.5"
-            aria-hidden="true"
-          />
-        </div>
-      </div>
+  const tx = useTxController();
+  useTxToasts(tx);
+  useTxPhaseEffects(tx, {onSuccess: onWithdrawn});
 
-      <dl className="grid grid-cols-2 gap-x-3 gap-y-2">
-        <Cell label="Term" value={`${position.days} days`} mono />
-        <Cell label="Unlock" value={formatDate(position.unlockTime)} mono />
-        <Cell
-          label="Remaining"
-          value={
-            position.status === 'settled' ? '—' : position.status === 'ready' ? 'Ready' : formatDuration(remaining)
-          }
-          mono
-          tone={position.status === 'ready' ? 'success' : 'default'}
+  const withdrawParams = {
+    address: locker.address,
+    abi: locker.abi,
+    functionName: 'withdraw' as const,
+    args: [position.lockId] as const,
+  };
+
+  return (
+    <div className="flex flex-col gap-0">
+      <button
+        type="button"
+        onClick={() => onOpen(position.lockId)}
+        aria-label={`Vault ${position.lockId.toString()}, ${label}. Open details.`}
+        className={`group flex w-full cursor-pointer flex-col gap-3 rounded-[var(--radius-card)] border bg-[var(--color-surface)] p-4 text-left transition-colors hover:border-[var(--color-border-strong)] hover:bg-[var(--color-surface-hover)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-primary-1)] ${
+          position.status === 'ready'
+            ? 'border-[rgba(46,204,113,0.32)] rounded-b-none border-b-0'
+            : position.status === 'settled'
+              ? 'border-[var(--color-border)] opacity-70'
+              : 'border-[var(--color-border)]'
+        }`}
+      >
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0 flex-1">
+            <span className="t-mono-sm block text-[var(--color-fg)]">Vault #{position.lockId.toString()}</span>
+            <span
+              title={formatZeroGFull(position.amount)}
+              className="t-numeric mt-1 block break-anywhere"
+            >
+              {formatZeroG(position.amount, {maxDecimals: 4})}{' '}
+              <span className="text-[0.75rem] font-normal text-[var(--color-text-muted)]">0G</span>
+            </span>
+          </div>
+          <div className="flex shrink-0 items-center gap-1.5">
+            <Status tone={tone}>{label}</Status>
+            <ChevronRight
+              size={18}
+              className="text-[var(--color-text-muted)] transition-transform group-hover:translate-x-0.5"
+              aria-hidden="true"
+            />
+          </div>
+        </div>
+
+        <dl className="grid grid-cols-2 gap-x-3 gap-y-2">
+          <Cell label="Term" value={`${position.days} days`} mono />
+          <Cell label="Unlock" value={formatDate(position.unlockTime)} mono />
+          <Cell
+            label="Remaining"
+            value={
+              position.status === 'settled' ? '—' : position.status === 'ready' ? 'Ready' : formatDuration(remaining)
+            }
+            mono
+            tone={position.status === 'ready' ? 'success' : 'default'}
+          />
+          <Cell
+            label="Status"
+            value={position.status === 'ready' ? 'Ready to withdraw' : position.status === 'settled' ? 'Settled' : 'Locked in vault'}
+            tone={position.status === 'ready' ? 'success' : 'default'}
+          />
+        </dl>
+      </button>
+
+      {/* Withdraw button sits flush below the card for UNLOCKED vaults — separate
+          from the card button to avoid invalid nested button HTML. */}
+      {position.status === 'ready' ? (
+        <TxButton
+          tx={tx}
+          params={withdrawParams}
+          idleLabel="Withdraw"
+          successLabel="Withdrawn"
+          variant="success"
+          fullWidth
+          minHeight="2.75rem"
+          className="rounded-t-none rounded-b-[var(--radius-card)] border border-t-0 border-[rgba(46,204,113,0.32)]"
         />
-        {/* Text, not a button: the card itself is the only click target, so a
-            control nested inside a button would be invalid HTML and ambiguous
-            for keyboard and screen-reader users. */}
-        <Cell
-          label="Status"
-          value={position.status === 'ready' ? 'Ready to withdraw' : position.status === 'settled' ? 'Settled' : 'Locked in vault'}
-          tone={position.status === 'ready' ? 'success' : 'default'}
-        />
-      </dl>
-    </button>
+      ) : null}
+    </div>
   );
 }
 
-function TableRow({position, now, onOpen}: {position: Position; now: bigint; onOpen: (id: bigint) => void}) {
+/**
+ * Desktop table row. Each ready row owns its own tx controller so multiple
+ * withdrawals can be queued independently without sharing state.
+ */
+function TableRow({position, now, onOpen, onWithdrawn}: {position: Position; now: bigint; onOpen: (id: bigint) => void; onWithdrawn: () => void}) {
   const tone = position.status === 'ready' ? 'ready' : position.status === 'settled' ? 'withdrawn' : 'warning';
   const label = position.status === 'ready' ? 'UNLOCKED' : position.status === 'settled' ? 'WITHDRAWN' : 'LOCKED';
   const remaining = position.unlockTime > now ? position.unlockTime - now : 0n;
+
+  const tx = useTxController();
+  useTxToasts(tx);
+  useTxPhaseEffects(tx, {onSuccess: onWithdrawn});
+
+  const withdrawParams = {
+    address: locker.address,
+    abi: locker.abi,
+    functionName: 'withdraw' as const,
+    args: [position.lockId] as const,
+  };
 
   return (
     <tr className="border-b border-[var(--color-border)] last:border-b-0 hover:bg-[var(--color-surface-hover)]">
@@ -298,12 +342,24 @@ function TableRow({position, now, onOpen}: {position: Position; now: bigint; onO
         {position.status === 'settled' ? '—' : position.status === 'ready' ? 'Ready' : formatDuration(remaining)}
       </Td>
       <Td>
-        <div className="flex items-center gap-2">
-          <Status tone={tone}>{label}</Status>
-          {position.status === 'ready' ? (
-            <span className="text-[0.75rem] text-success">Ready to withdraw</span>
-          ) : null}
-        </div>
+        <Status tone={tone}>{label}</Status>
+      </Td>
+      <Td>
+        {position.status === 'ready' ? (
+          <TxButton
+            tx={tx}
+            params={withdrawParams}
+            idleLabel="Withdraw"
+            successLabel="Withdrawn"
+            variant="success"
+            minHeight="2rem"
+            className="text-[0.8125rem]"
+          />
+        ) : position.status === 'settled' ? (
+          <span className="t-mono-xs text-[var(--color-text-muted)]">Settled</span>
+        ) : (
+          <span className="t-mono-xs text-[var(--color-text-muted)]">Locked</span>
+        )}
       </Td>
     </tr>
   );

@@ -40,7 +40,7 @@
   --radius-modal: 0.75rem;
 
   /* Single vertical rhythm token: every block gap on every page uses this. */
-  --space-section: 1.5rem; /* 24px */
+  --space-section: 1rem; /* 16px on mobile */
   /*
    * Horizontal gutter. Phones get 16px so the header toggle sits 16px from the
    * screen edge; from md up it widens to 24px to match --space-section. The
@@ -55,8 +55,10 @@
    * The sidebar header and the top bar are two halves of one horizontal rule,
    * so both must resolve to the same value. Anything that needs to sit inside
    * that row (the toggle, the monogram) is sized from the same token.
+   * Mobile: 56px (3.5rem) to reduce chrome footprint on small screens.
+   * Desktop: 72px (4.5rem) for comfort on larger viewports.
    */
-  --header-height: 4.5rem; /* 72px */
+  --header-height: 3.5rem; /* 56px on mobile */
   --header-toggle-size: 1.75rem; /* 28px */
   --bottom-nav-height: 4rem; /* 64px */
 
@@ -395,6 +397,8 @@
   @media (min-width: 48rem) {
     :root {
       --space-gutter: 1.5rem; /* 24px */
+      --space-section: 1.5rem; /* 24px on tablet/desktop */
+      --header-height: 4.5rem; /* 72px on tablet/desktop */
     }
   }
 

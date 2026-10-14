@@ -27,9 +27,9 @@ const VARIANTS: Record<ButtonVariant, string> = {
 };
 
 const SIZES: Record<ButtonSize, string> = {
-  sm: 'h-8 px-3 text-[0.75rem] font-mono',
-  md: 'h-10 px-4 text-[0.875rem] font-mono tracking-[0.04em]',
-  lg: 'h-12 px-5 text-[0.875rem] font-mono tracking-[0.04em]',
+  sm: 'h-8 px-3 text-[0.75rem] font-medium',
+  md: 'h-10 px-4 text-[0.875rem] font-medium',
+  lg: 'h-12 px-5 text-[0.875rem] font-semibold',
 };
 
 export function Button({
@@ -69,14 +69,13 @@ export function Input({prefix, suffix, error, className = '', id, ...rest}: Inpu
         className={`flex min-w-0 items-center gap-2 rounded-[var(--radius-control)] border bg-[var(--color-surface)] px-4 transition-colors duration-150 focus-within:border-[var(--color-primary-1)] ${
           error ? 'border-error' : 'border-[var(--color-border)]'
         }`}
-        style={{minHeight: '3rem'}}
+        style={{minHeight: '2.75rem'}}
       >
         {prefix ? (
           <span className="t-mono-sm shrink-0 pr-1 text-[var(--color-text-secondary)]">{prefix}</span>
         ) : null}
         <input
           id={id}
-          style={{fontSize: '1.125rem'}}
           className={`t-mono-sm min-w-0 flex-1 bg-transparent text-[var(--color-fg)] outline-none placeholder:text-[var(--color-text-muted)] disabled:cursor-not-allowed disabled:text-[var(--color-text-muted)] ${className}`}
           {...rest}
         />

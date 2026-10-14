@@ -26,18 +26,18 @@ export function TopBar() {
       className="safe-top sticky top-0 z-50 w-full border-b border-[var(--color-border)] bg-[color-mix(in_srgb,var(--color-bg)_88%,transparent)] backdrop-blur-md relative"
       style={{height: 'var(--header-height)'}}
     >
-      {/* 3. KIRI TOP BAR: Tombol toggle sidebar absolut di left: 16px */}
+      {/* Toggle sidebar — icon + visible "Menu" label on mobile */}
       <button
         type="button"
         onClick={toggleSidebar}
         aria-label="Toggle sidebar"
         aria-expanded={mobileOpen || !collapsed}
         aria-controls={SIDEBAR_ID}
-        title="Toggle sidebar"
         style={{left: '16px', top: '50%', transform: 'translateY(-50%)'}}
-        className="absolute z-20 inline-flex h-[36px] w-[36px] shrink-0 cursor-pointer items-center justify-center rounded-[8px] border border-[var(--color-border)] bg-transparent text-[var(--color-text-secondary)] transition-colors hover:bg-[var(--color-surface-hover)] hover:text-[var(--color-fg)] focus-visible:outline-2 focus-visible:outline-[var(--color-primary-1)] focus-visible:outline-offset-[-2px]"
+        className="absolute z-20 inline-flex h-[36px] shrink-0 cursor-pointer items-center gap-1.5 rounded-[8px] border border-[var(--color-border)] bg-transparent px-2 text-[var(--color-text-secondary)] transition-colors hover:bg-[var(--color-surface-hover)] hover:text-[var(--color-fg)] focus-visible:outline-2 focus-visible:outline-[var(--color-primary-1)] focus-visible:outline-offset-[-2px] md:w-[36px] md:px-0 md:justify-center"
       >
         <Menu size={18} aria-hidden="true" />
+        <span className="text-[0.75rem] font-medium md:hidden">Menu</span>
       </button>
 
       {/* 2 & 4. LOGO DI TENGAH LAYAR: Absolut di pusat viewport */}

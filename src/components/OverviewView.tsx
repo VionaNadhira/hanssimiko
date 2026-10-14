@@ -11,7 +11,7 @@ import {useWorkspace} from '@/components/WorkspaceContext';
 import {getAddressUrl} from '@/config/chain';
 import {locker} from '@/config/contract';
 import {useVaultData} from '@/hooks/useVaultData';
-import {formatDate, formatDuration, formatZeroG} from '@/lib/format';
+import {formatDate, formatZeroG} from '@/lib/format';
 
 export function OverviewView() {
   const {setTab} = useWorkspace();
@@ -21,7 +21,7 @@ export function OverviewView() {
   const {data: totalLocked} = useReadContract({...locker, functionName: 'getTotalLocked'});
 
   const activeCount = positions.filter((p) => p.status === 'active').length;
-  const totalPositions = positions.length;
+  const readyCount = positions.filter((p) => p.status === 'ready').length;
 
   /** The soonest maturity among locks that have not been settled. */
   const nextUnlock = useMemo(() => {
@@ -33,50 +33,30 @@ export function OverviewView() {
 
   return (
     <div className="stack">
-      {/* Statistic row. */}
-      <div className="grid grid-cols-1 gap-[var(--space-section)] sm:grid-cols-2 lg:grid-cols-4">
+      {/* Primary metrics: Total Locked (protocol-wide) and Your Active Locks. */}
+      <div className="grid grid-cols-1 gap-[var(--space-section)] sm:grid-cols-2">
         {isLoading && positions.length === 0 && totalLocked === undefined ? (
           <>
-            <StatCardSkeleton />
-            <StatCardSkeleton />
             <StatCardSkeleton />
             <StatCardSkeleton />
           </>
         ) : (
           <>
             <StatCard
-              label="Total Locked"
+              label="Total Protocol Locked"
               value={formatZeroG(totalLocked ?? 0n, {maxDecimals: 4})}
               unit="0G"
-              footerLabel="Solvency"
+              footerLabel="Contract Solvency"
               footerValue="100%"
+              tone="neutral"
             />
             <StatCard
-              label="Active Locks"
+              label="Your Active Locks"
               value={isLoading ? '—' : String(activeCount)}
-              unit=""
-              footerLabel="Your position"
-              footerValue={activeCount > 0 ? 'Protected' : 'None yet'}
-            />
-            <StatCard
-              label="Next Unlock"
-              value={nextUnlock ? formatDate(nextUnlock.unlockTime) : '—'}
-              unit=""
-              footerLabel="Remaining"
-              footerValue={
-                nextUnlock
-                  ? nextUnlock.status === 'ready'
-                    ? 'Ready now'
-                    : formatDuration(nextUnlock.unlockTime - now)
-                  : 'No schedule'
-              }
-            />
-            <StatCard
-              label="Total Positions"
-              value={isLoading ? '—' : String(totalPositions)}
-              unit=""
-              footerLabel="Including settled"
-              footerValue={totalPositions > 0 ? 'On-chain' : 'Empty'}
+              unit={activeCount === 1 ? 'vault' : 'vaults'}
+              footerLabel={readyCount > 0 ? `${readyCount} ready to withdraw` : 'All locked'}
+              footerValue={nextUnlock && nextUnlock.status === 'active' ? `Next: ${formatDate(nextUnlock.unlockTime)}` : '—'}
+              tone={readyCount > 0 ? 'success' : 'neutral'}
             />
           </>
         )}
@@ -142,17 +122,16 @@ function StatCard({
   tone?: 'neutral' | 'success';
 }) {
   return (
-    <div className="flex flex-col gap-3 rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] p-[var(--space-section)]">
-      <span className="t-label min-w-0 truncate text-[var(--color-text-muted)]">{label}</span>
+    <div className="flex flex-col gap-4 rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] p-[var(--space-section)]">
+      <span className="t-label text-[var(--color-text-muted)]">{label}</span>
       <div className="t-numeric min-w-0 text-[var(--color-fg)]">
         <span className="break-anywhere">{value}</span>
-        {unit ? <span className="ml-1 text-[0.8125rem] font-normal text-[var(--color-text-muted)]">{unit}</span> : null}
+        {unit ? <span className="ml-1.5 text-[0.875rem] font-normal text-[var(--color-text-muted)]">{unit}</span> : null}
       </div>
-      <div className="h-px w-full bg-[var(--color-border)]" />
-      <div className="flex h-4 items-center justify-between gap-2">
-        <span className="truncate text-[0.75rem] text-[var(--color-text-muted)]">{footerLabel}</span>
+      <div className="flex items-center justify-between gap-2 border-t border-[var(--color-border)] pt-3">
+        <span className="text-[0.75rem] text-[var(--color-text-muted)]">{footerLabel}</span>
         <span
-          className={`shrink-0 truncate text-[0.75rem] ${
+          className={`shrink-0 text-[0.75rem] font-medium ${
             tone === 'success' ? 'text-success' : 'text-[var(--color-text-secondary)]'
           }`}
         >
