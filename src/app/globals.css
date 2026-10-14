@@ -348,19 +348,19 @@
    * first server-rendered paint already reserves the right space.
    */
   .app-main {
-    padding-left: 0;
+    margin-left: 0;
   }
   @media (min-width: 48rem) {
     .app-main {
-      padding-left: var(--sidebar-width-rail);
+      margin-left: var(--sidebar-width-rail);
     }
   }
   @media (min-width: 64rem) {
     .app-main {
-      padding-left: var(--sidebar-width-expanded);
+      margin-left: var(--sidebar-width-expanded);
     }
     [data-collapsed='true'] .app-main {
-      padding-left: var(--sidebar-width-rail);
+      margin-left: var(--sidebar-width-rail);
     }
   }
 

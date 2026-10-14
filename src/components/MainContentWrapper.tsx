@@ -15,7 +15,7 @@ export function MainContentWrapper({children}: {children: React.ReactNode}) {
 
   return (
     <div className="app-shell min-w-0 flex-1" data-collapsed={collapsed ? 'true' : 'false'}>
-      <div className="app-main min-w-0 transition-[padding] duration-250 ease-in-out">
+      <div className="app-main min-w-0 transition-[margin] duration-250 ease-in-out">
         <main className="min-w-0 pb-[calc(var(--bottom-nav-height)+var(--safe-bottom))] md:pb-0">
           <div className="page-container py-6 sm:py-8 lg:py-10">{children}</div>
         </main>
